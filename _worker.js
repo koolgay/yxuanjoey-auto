@@ -15,24 +15,14 @@ let scu = 'https://url.v1.mk/sub';  // 订阅转换地址
 // 默认优选域名列表
 const directDomains = [
     { name: "cloudflare.182682.xyz", domain: "cloudflare.182682.xyz" },
-    { name: "speed.marisalnc.com", domain: "speed.marisalnc.com" },
     { domain: "freeyx.cloudflare88.eu.org" },
     { domain: "bestcf.top" },
     { domain: "cdn.2020111.xyz" },
-    { domain: "cfip.cfcdn.vip" },
     { domain: "cf.0sm.com" },
     { domain: "cf.090227.xyz" },
     { domain: "cf.zhetengsha.eu.org" },
-    { domain: "cloudflare.9jy.cc" },
-    { domain: "cf.zerone-cdn.pp.ua" },
     { domain: "cfip.1323123.xyz" },
-    { domain: "cnamefuckxxs.yuchen.icu" },
     { domain: "cloudflare-ip.mofashi.ltd" },
-    { domain: "115155.xyz" },
-    { domain: "cname.xirancdn.us" },
-    { domain: "f3058171cad.002404.xyz" },
-    { domain: "8.889288.xyz" },
-    { domain: "cdn.tzpro.xyz" },
     { domain: "cf.877771.xyz" },
     { domain: "xn--b6gac.eu.org" }
 ];
@@ -149,13 +139,13 @@ async function fetchAndParseNewIPs(piu) {
 }
 
 // 生成VLESS链接
-function generateLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/?ed=2048') {
+function generateLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/') {
     const CF_HTTP_PORTS = [80, 8080, 8880, 2052, 2082, 2086, 2095];
     const CF_HTTPS_PORTS = [443, 2053, 2083, 2087, 2096, 8443];
     const defaultHttpsPorts = [443];
     const defaultHttpPorts = disableNonTLS ? [] : [80];
     const links = [];
-    const wsPath = customPath || '/?ed=2048';
+    const wsPath = customPath || '/';
     const proto = 'vless';
 
     list.forEach(item => {
@@ -215,13 +205,13 @@ function generateLinksFromSource(list, user, workerDomain, disableNonTLS = false
 }
 
 // 生成Trojan链接
-async function generateTrojanLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/?ed=2048') {
+async function generateTrojanLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/') {
     const CF_HTTP_PORTS = [80, 8080, 8880, 2052, 2082, 2086, 2095];
     const CF_HTTPS_PORTS = [443, 2053, 2083, 2087, 2096, 8443];
     const defaultHttpsPorts = [443];
     const defaultHttpPorts = disableNonTLS ? [] : [80];
     const links = [];
-    const wsPath = customPath || '/?ed=2048';
+    const wsPath = customPath || '/';
     const password = user;  // Trojan使用UUID作为密码
 
     list.forEach(item => {
@@ -281,13 +271,13 @@ async function generateTrojanLinksFromSource(list, user, workerDomain, disableNo
 }
 
 // 生成VMess链接
-function generateVMessLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/?ed=2048') {
+function generateVMessLinksFromSource(list, user, workerDomain, disableNonTLS = false, customPath = '/') {
     const CF_HTTP_PORTS = [80, 8080, 8880, 2052, 2082, 2086, 2095];
     const CF_HTTPS_PORTS = [443, 2053, 2083, 2087, 2096, 8443];
     const defaultHttpsPorts = [443];
     const defaultHttpPorts = disableNonTLS ? [] : [80];
     const links = [];
-    const wsPath = customPath || '/?ed=2048';
+    const wsPath = customPath || '/';
 
     list.forEach(item => {
         let nodeNameBase = item.isp ? item.isp.replace(/\s/g, '_') : (item.name || item.domain || item.ip);
@@ -345,11 +335,11 @@ function generateVMessLinksFromSource(list, user, workerDomain, disableNonTLS = 
 }
 
 // 从GitHub IP生成链接（VLESS）
-function generateLinksFromNewIPs(list, user, workerDomain, customPath = '/?ed=2048') {
+function generateLinksFromNewIPs(list, user, workerDomain, customPath = '/') {
     const CF_HTTP_PORTS = [80, 8080, 8880, 2052, 2082, 2086, 2095];
     const CF_HTTPS_PORTS = [443, 2053, 2083, 2087, 2096, 8443];
     const links = [];
-    const wsPath = customPath || '/?ed=2048';
+    const wsPath = customPath || '/';
     const proto = 'vless';
     
     list.forEach(item => {
@@ -380,7 +370,7 @@ async function handleSubscriptionRequest(request, user, customDomain, piu, ipv4E
     const workerDomain = url.hostname;  // workerDomain始终是请求的hostname
     const nodeDomain = customDomain || url.hostname;  // 用户输入的域名用于生成节点时的host/sni
     const target = url.searchParams.get('target') || 'base64';
-    const wsPath = customPath || '/?ed=2048';
+    const wsPath = customPath || '/';
 
     async function addNodesFromList(list) {
         // 确保至少有一个协议被启用
@@ -493,7 +483,7 @@ function generateClashConfig(links) {
         const port = link.match(/@[^:]+:(\d+)/)?.[1] || '443';
         const uuid = link.match(/vless:\/\/([^@]+)@/)?.[1] || '';
         const tls = link.includes('security=tls');
-        const path = link.match(/path=([^&#]+)/)?.[1] || '/?ed=2048';
+        const path = link.match(/path=([^&#]+)/)?.[1] || '/';
         const host = link.match(/host=([^&#]+)/)?.[1] || '';
         const sni = link.match(/sni=([^&#]+)/)?.[1] || '';
         
@@ -531,7 +521,7 @@ function generateSurgeConfig(links) {
     let config = '[Proxy]\n';
     links.forEach(link => {
         const name = decodeURIComponent(link.split('#')[1] || '节点');
-        config += `${name} = vless, ${link.match(/@([^:]+):(\d+)/)?.[1] || ''}, ${link.match(/@[^:]+:(\d+)/)?.[1] || '443'}, username=${link.match(/vless:\/\/([^@]+)@/)?.[1] || ''}, tls=${link.includes('security=tls')}, ws=true, ws-path=${link.match(/path=([^&#]+)/)?.[1] || '/?ed=2048'}, ws-headers=Host:${link.match(/host=([^&#]+)/)?.[1] || ''}\n`;
+        config += `${name} = vless, ${link.match(/@([^:]+):(\d+)/)?.[1] || ''}, ${link.match(/@[^:]+:(\d+)/)?.[1] || '443'}, username=${link.match(/vless:\/\/([^@]+)@/)?.[1] || ''}, tls=${link.includes('security=tls')}, ws=true, ws-path=${link.match(/path=([^&#]+)/)?.[1] || '/'}, ws-headers=Host:${link.match(/host=([^&#]+)/)?.[1] || ''}\n`;
     });
     config += '\n[Proxy Group]\nPROXY = select, ' + links.map((_, i) => decodeURIComponent(links[i].split('#')[1] || `节点${i + 1}`)).join(', ') + '\n';
     return config;
@@ -900,8 +890,8 @@ function generateHomePage(scuValue) {
             
             <div class="form-group">
                 <label>WebSocket路径（可选）</label>
-                <input type="text" id="customPath" placeholder="留空则使用默认路径 /?ed=2048" value="/?ed=2048">
-                <small style="display: block; margin-top: 6px; color: #86868b; font-size: 13px;">自定义WebSocket路径，例如：/v2ray 或 /?ed=2048</small>
+                <input type="text" id="customPath" placeholder="留空则使用默认路径 /" value="/">
+                <small style="display: block; margin-top: 6px; color: #86868b; font-size: 13px;">自定义WebSocket路径，例如：/v2ray 或 /</small>
             </div>
             
             <div class="switch-group">
@@ -1077,7 +1067,7 @@ function generateHomePage(scuValue) {
         function generateClientLink(clientType, clientName) {
             const domain = document.getElementById('domain').value.trim();
             const uuid = document.getElementById('uuid').value.trim();
-            const customPath = document.getElementById('customPath').value.trim() || '/?ed=2048';
+            const customPath = document.getElementById('customPath').value.trim() || '/';
             
             if (!domain || !uuid) {
                 alert('请先填写域名和UUID');
@@ -1127,7 +1117,7 @@ function generateHomePage(scuValue) {
             if (switches.switchTLS) subscriptionUrl += '&dkby=yes';
             
             // 添加自定义路径
-            if (customPath && customPath !== '/?ed=2048') {
+            if (customPath && customPath !== '/') {
                 subscriptionUrl += \`&path=\${encodeURIComponent(customPath)}\`;
             }
             
@@ -1267,7 +1257,7 @@ export default {
             const disableNonTLS = url.searchParams.get('dkby') === 'yes';
             
             // 自定义路径
-            const customPath = url.searchParams.get('path') || '/?ed=2048';
+            const customPath = url.searchParams.get('path') || '/';
             
             return await handleSubscriptionRequest(request, uuid, domain, piu, ipv4Enabled, ipv6Enabled, ispMobile, ispUnicom, ispTelecom, evEnabled, etEnabled, vmEnabled, disableNonTLS, customPath);
         }
